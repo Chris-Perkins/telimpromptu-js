@@ -1,0 +1,50 @@
+Telimpromptu, all in JavaScript. Frontend in vanilla react, styled with tailwind, hosted and database with firebase. 
+
+Features:
+Browser form where users can create their own scripts
+Generate Invite Links
+Pick a random script done by someone else
+Vote on scripts
+
+Flow is:
+HomePage -> CreateRoomForm or JoinRoom -> WaitingRoom (assign headline writer)-> 
+TopicVote -> Headline (dole out roles, dole out propmts) -> PromptFilling -> Teleprompter
+
+To Do:
+1. Home page
+    ✅ sign in on firebase
+    ✅ make room with firestore
+    ✅ make player with firestore
+    ✅ show all rooms 
+    ✅ be able to connect to room by clicking on it and entering password
+2. Waiting Room
+    ✅ display all players in room
+    ✅ reload list of players when new player joins
+    ✅ Restrict start game button until there are at least 3 players
+    ✅ Restrict game starting until everyone clicks start game 
+    ✅ navigate everyone to Headline 
+    ✅ Display (you) next to name
+    ✅ Change (ready) to checkmark
+    Remove a player after they leave room
+
+3. Headline
+    ✅ Dole out roles
+    ✅ Randomly assign a headline writer
+    ✅ Accept input from headline writer 
+    Dole out prompts
+    Have an option to randomly show an idea from headline-ideas.js
+
+4. Script creation page
+    ✅ Instructions
+    ✅ Pick a Topic
+    ✅ Select roles for the Topic
+    ✅ Big input box where you write the script
+    ✅ Advanced instructions for dependent prompts
+    Preview of how script will appear
+
+5. Voting system
+    after a teleprompter is displayed, players should be able to upvote or downvote each segment. Maybe highly upvoted segments are most likely to appear for other players
+
+
+TODO: initialize roomData and playerData 
+in the useEffect hook initializeRoom function in every page 

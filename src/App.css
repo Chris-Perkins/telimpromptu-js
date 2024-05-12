@@ -1,0 +1,33 @@
+body {
+  background-color: rgb(31, 31, 70);
+}
+
+.App {
+  text-align: center;
+  color: rgb(231, 231, 231);
+}
+
+.satisfying-button {
+  font-style: bold;
+  border-radius: 10px;
+  border: none;
+  background-color: rgb(240, 216, 80);
+  box-shadow: 0 5px 0 rgb(179, 161, 59);
+}
+
+.satisfying-button:hover {
+  cursor: pointer;
+  background-color: rgb(255, 237, 135);
+}
+
+.satisfying-button:active { 
+  box-shadow: none;
+  transform: translateY(5px);
+}
+
+.satisfying-button:disabled {
+  background-color: rgb(204, 204, 204);
+  cursor: not-allowed; 
+  box-shadow: none; 
+
+}
