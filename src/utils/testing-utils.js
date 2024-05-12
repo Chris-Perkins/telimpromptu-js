@@ -24,7 +24,8 @@ export async function setupTestEnvironment() {
         await updateDoc(roomDocRef, {
             topic: 'sports',
             isJoinable: false,
-            headlineWriterId: result.playerId
+            headlineWriterId: result.playerId,
+            hostPlayerId: result.playerId
         });
 
     } catch (error) {

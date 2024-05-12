@@ -34,9 +34,9 @@ export function assignPrompts(scriptLines, promptObjects, players) {
 
   // Output object; will store all players to a list of the prompts they've
   // been assigned to.
-  const playerToAssignedPrompts = {};
+  const playerToAssignedPrompts = new Map();
   for (const player of players) {
-    playerToAssignedPrompts[player.id] = [];
+    playerToAssignedPrompts.set(player.id, []);
   }
 
   // TODO: Iterating through this based on the input order.
@@ -61,7 +61,7 @@ export function assignPrompts(scriptLines, promptObjects, players) {
         break;
       }
 
-      const numPromptsAssignedToPlayer = playerToAssignedPrompts[playerId].length;
+      const numPromptsAssignedToPlayer = playerToAssignedPrompts.get(playerId).length;
       if (numPromptsAssignedToPlayer <= curMinPrompts) {
         if (numPromptsAssignedToPlayer < curMinPrompts) {
           curMinPrompts = numPromptsAssignedToPlayer;
@@ -77,7 +77,7 @@ export function assignPrompts(scriptLines, promptObjects, players) {
 
     const playerIdToAssign = getRandomElement(eligiblePlayerIds);
     for (const prompt of prompts) {
-      playerToAssignedPrompts[playerIdToAssign].push(prompt);
+      playerToAssignedPrompts.get(playerIdToAssign).push(prompt);
     }
   }
   return playerToAssignedPrompts;
@@ -105,7 +105,7 @@ function getPrompts(promptObject) {
   if (promptObject.hasOwnProperty("prompts")) {
     return promptObject.prompts;
   }
-  return promptObject;
+  return [promptObject];
 }
 
 // Returns a map of speakers to the prompts that they will reference in the
@@ -114,7 +114,7 @@ function mapSpeakersToPromptsReferenced(scriptLines) {
   const speakerToReferencedVariables = {};
   for (const line of scriptLines) {
     const lineSpeaker = line.speaker;
-    if (!speakerToReferencedVariables.has(lineSpeaker)) {
+    if (!(lineSpeaker in speakerToReferencedVariables)) {
       speakerToReferencedVariables[lineSpeaker] = new Set();
     }
 

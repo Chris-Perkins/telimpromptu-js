@@ -8,7 +8,9 @@ export async function saveRoomToDb(roomName, password) {
     try {
         const docRef = await addDoc(roomsCollectionRef, {
             roomName: roomName,
-            password: password,  
+            password: password,
+            segmentIds: null,
+            responses: [],
             headlineWriterId: null,
             headline: null,
             isJoinable: true,
@@ -16,7 +18,7 @@ export async function saveRoomToDb(roomName, password) {
             topic: null,
             currentPage: null, // TODO: use this to track where players are. will be useful for rejoining the room
             gamesPlayed: 0, // TODO: use this for handling a "play new game" feature
-            createdAt: new Date() 
+            createdAt: new Date(),
         });
         return { success: true, roomId: docRef.id }
     } catch (error) {
@@ -55,14 +57,14 @@ export async function assignHostToRoom(roomId, playerId) {
 
 // TODO: Change from passwords to access tokens. Share links to join with token in url
 // something like const accessToken = uuidv4(); and const roomLink = `https:/telimpromptu.com/join?token=${accessToken}`;
-// then use a useEffect hook to get the url params and authenticate 
+// then use a useEffect hook to get the url params and authenticate
 export async function isRoomPasswordCorrect(roomId, password) {
     try {
         const data = await getRoomDataFromRoomId(roomId);
         return data.password === password;
     } catch (error) {
         console.error(`Could not check password for room with id ${roomId}}`, error)
-        return false; 
+        return false;
     }
 }
 
@@ -80,7 +82,7 @@ export async function isRoomNameAvailable(roomName) {
 export async function getRoomNameById(roomId) {
     try {
         const data = await getRoomDataFromRoomId(roomId);
-        return data.roomName; 
+        return data.roomName;
     } catch (error) {
         console.error(`Could not get room name from room id ${roomId}}`, error)
     }
@@ -89,7 +91,7 @@ export async function getRoomNameById(roomId) {
 export async function isRoomJoinable(roomId) {
     try {
         const data = await getRoomDataFromRoomId(roomId);
-        return data.isJoinable; 
+        return data.isJoinable;
     } catch (error) {
         console.error(`Could not get room join status from room id ${roomId}}`, error)
     }
@@ -130,5 +132,33 @@ export async function getPlayersInRoom(roomId) {
     } catch (error) {
         console.error(`Error getting players from room ID ${roomId}:`, error);
         return {}
+    }
+}
+
+export async function setScriptSegments(roomId, segments) {
+    try {
+        const docRef = doc(roomsCollectionRef, roomId);
+        await updateDoc(docRef, {
+            segmentIds: segments
+        });
+        console.log(`Value "${segments}" added to map field "segmentIds" in document "${roomId}" successfully.`);
+        return { success: true }
+    } catch (error) {
+        console.error("Error adding value to map field: ", error);
+        return { success: false }
+    }
+}
+
+export async function addPromptResponse(roomId, promptId, promptResponse) {
+    try {
+        const docRef = doc(roomsCollectionRef, roomId);
+        await updateDoc(docRef, {
+            [`responses.${promptId}`]: promptResponse
+        });
+        console.log(`Value "${promptResponse}" added to map field "responses.${promptId}" in document "${roomId}" successfully.`);
+        return { success: true }
+    } catch (error) {
+        console.error("Error adding value to map field: ", error);
+        return { success: false }
     }
 }

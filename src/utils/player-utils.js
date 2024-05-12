@@ -1,6 +1,7 @@
 import { addDoc, query, where, doc, getDoc, getDocs, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { playerCollectionRef } from '../config/firebase';
 import { getRoomDataFromRoomId } from './room-utils';
+import { segments } from '../script-building/segments';
 
 export async function savePlayerToDb(playerName, roomId) {
     try {
@@ -13,8 +14,9 @@ export async function savePlayerToDb(playerName, roomId) {
                 isReady: false,
                 role: null,
                 topicVote: null,
+                prompts: [],
                 createdAt: new Date(),
-                lastActive: new Date()
+                lastActive: new Date(),
             });
             return { success: true, playerId: docRef.id };
         } else {
@@ -64,6 +66,18 @@ export async function isAllTopicVotesIn(roomId) {
     return querySnapshot.empty;
 }
 
+export async function setPromptAssignments(playerId, promptIds) {
+    try {
+        const docRef = playerCollectionRef.doc(playerId);
+        await updateDoc(docRef, {prompts: promptIds})
+        console.log(`Field "${promptIds}" added to player "${playerId}" successfully.`);
+        return { success: true }
+    } catch (error) {
+        console.error("Error adding field to document: ", error);
+        return { success: false }
+    }
+}
+
 export async function playerSendHeartBeat(playerId) {
     const playerRef = doc(playerCollectionRef, playerId);
     const timestamp = serverTimestamp();
@@ -76,7 +90,7 @@ export async function playerSendHeartBeat(playerId) {
 }
 
 export async function removePlayerFromRoom(playerId) {
-    // TODO: implement this 
+    // TODO: implement this
     // TODO: check if the last player is leaving the room. If so, delete the room.
     const playerRef = doc(playerCollectionRef, playerId);
     //const docSnapshot = await getDoc(playerRef);
@@ -92,12 +106,12 @@ export async function isPlayerNameAvailable(playerName, roomId) {
     try {
         const q = query(playerCollectionRef, where('roomId', '==', roomId));
         const querySnapshot = await getDocs(q);
-        const isAvailable = !querySnapshot.docs.some(doc => 
+        const isAvailable = !querySnapshot.docs.some(doc =>
             doc.data().playerName.toLowerCase() === playerName.toLowerCase());
         return isAvailable;
     } catch (error) {
         console.error('Error checking player name availability: ', error);
-        return false; 
+        return false;
     }
 }
 
@@ -106,16 +120,16 @@ export async function getListOfPlayersFromRoomId(roomId) {
     try {
         const querySnapshot = await getDocs(q);
         const players = querySnapshot.docs.map(doc => ({
-            id: doc.id, 
-            ...doc.data() 
+            id: doc.id,
+            ...doc.data()
         }));
-        return players; 
+        return players;
     } catch (error) {
         console.error('Error fetching players:', error);
         return [];
     }
 }
-    
+
 export async function isHeadlineWriter(playerId) {
     try {
         const roomId = await getRoomIdFromPlayerId(playerId);
@@ -124,5 +138,31 @@ export async function isHeadlineWriter(playerId) {
     } catch (error) {
         console.error('Error in checking headline writer:', error);
         return false;
+    }
+}
+
+export async function setPlayerPromptAssignments(playerId, promptIds) {
+    console.log("hey alex");
+    try {
+        const docRef = doc(playerCollectionRef, playerId);
+        await updateDoc(docRef, {prompts: promptIds});
+        return { success: true };
+    } catch (error) {
+        console.error("Error adding value to map field: ", error);
+        return { success: false };
+    }
+}
+
+export async function getAvailablePromptsForPlayer(playerId) {
+    try {
+        const playerData = await getPlayerDataFromPlayerId(playerId);
+        console.log('playerdata', playerData)
+        console.log('players prompts are', playerData.prompts)
+        // TODO: make this work w group prompts
+        const promptIds = playerData.prompts;
+        const allPrompts = segments.reduce((acc, segment) => [...acc, ...segment.prompts], []);
+        return allPrompts.filter(prompt => promptIds.includes(prompt.id));
+    } catch (error) {
+        console.log(error)
     }
 }

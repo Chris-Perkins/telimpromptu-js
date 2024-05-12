@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 
-import { buildBasicScript } from '../script-building/BasicScriptBuilder.js'
-import { isHeadlineWriter, getPlayerDataFromPlayerId } from '../utils/player-utils.js';
-import { getRoomDataFromRoomId, setRoomHeadline } from '../utils/room-utils.js';
+import { generateScript, aggregateScriptData } from '../script-building/BasicScriptBuilder.js'
+import { isHeadlineWriter, getListOfPlayersFromRoomId, getPlayerDataFromPlayerId, setPlayerPromptAssignments } from '../utils/player-utils.js';
+import { getRoomDataFromRoomId, setScriptSegments, setRoomHeadline } from '../utils/room-utils.js';
 import { getRandomIdea } from '../utils/headline-ideas.js';
 import { assignPrompts } from '../utils/scripts-utils.js';
 import { getRandomEmoji } from '../utils/topic-to-emoji.js';
 import { assignRoles } from '../utils/game-utils.js';
 import PlayersAndRoles from '../components/PlayersAndRoles.js';
+import { useNavigate } from 'react-router-dom';
 
 export default function HeadlinePage() {
+    const navigate = useNavigate();
     const [isUserHeadlineWriter, setIsUserHeadlineWriter] = useState(false);
     const [headlineWriterName, setHeadlineWriterName] = useState('');
     const [mostVotedTopic, setMostVotedTopic] = useState('');
@@ -34,10 +36,16 @@ export default function HeadlinePage() {
                     console.log('heres ur id', playerId)
                     console.log('heres the host player id', roomData.hostPlayerId)
                     if (roomData.hostPlayerId === playerId) {
-                        //const script = buildBasicScript(roomData.topic, 3);
-                        //const assignments = assignPrompts(script.lines, script.prompts, playerData);
-                        //console.log(assignments);
-                        await assignRoles(roomId)
+                        const players = await getListOfPlayersFromRoomId(roomId);
+                        const scriptSegments = generateScript(roomData.topic, 3);
+                        await setScriptSegments(roomId, scriptSegments);
+
+                        const script = aggregateScriptData(scriptSegments);
+                        const assignments = assignPrompts(script.lines, script.prompts, players);
+                        await assignRoles(roomId);
+                        for (const [playerId, prompts] of assignments) {
+                            await setPlayerPromptAssignments(playerId, prompts.map(p => p.id));
+                        }
                     }
                     const fetchedIsHeadlineWriter = await isHeadlineWriter(playerId);
                     setIsUserHeadlineWriter(fetchedIsHeadlineWriter);
@@ -46,7 +54,6 @@ export default function HeadlinePage() {
                     setMostVotedTopic(roomData.topic);
                     setTopicEmoji(getRandomEmoji(roomData.topic))
                     setRoomName(roomData.roomName);
-
                 }
             } catch (error) {
                 console.error('Error checking headline writer status:', error);
@@ -67,6 +74,7 @@ export default function HeadlinePage() {
         const playerData = await getPlayerDataFromPlayerId(playerId);
         const roomId = playerData.roomId;
         await setRoomHeadline(roomId, headline)
+        navigate('/prompt-answering');
     }
 
     const handleIdeaRequest = () => {

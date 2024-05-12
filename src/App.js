@@ -9,6 +9,7 @@ import { Route, Routes, Link } from 'react-router-dom'
 import { SecretPage } from './components/SecretPage';
 import { ScriptWritingPage } from './components/ScriptWritingPage';
 import Footer from './components/Footer';
+import PromptAnswering from './pages/PromptAnswering';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path='/topic-vote' element={<TopicVotePage/>}/>
         <Route path='/secret-page' element={<SecretPage/>}/>
         <Route path='/script-writing' element={<ScriptWritingPage/>}/>
+        <Route path='/prompt-answering' element={<PromptAnswering/>}/>
       </Routes>
       <Footer/>
     </div>
